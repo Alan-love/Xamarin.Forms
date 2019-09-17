@@ -8,14 +8,15 @@ namespace Xamarin.Forms.Platform.UWP
 		ContentControl _emptyViewContentControl;
 		FrameworkElement _emptyView;
 
+		public static readonly DependencyProperty EmptyViewVisibilityProperty =
+			DependencyProperty.Register(nameof(EmptyViewVisibility), typeof(Visibility),
+				typeof(FormsListView), new PropertyMetadata(Visibility.Collapsed));
+
 		public Visibility EmptyViewVisibility
 		{
 			get { return (Visibility)GetValue(EmptyViewVisibilityProperty); }
 			set { SetValue(EmptyViewVisibilityProperty, value); }
 		}
-
-		public static readonly DependencyProperty EmptyViewVisibilityProperty =
-			DependencyProperty.Register(nameof(EmptyViewVisibility), typeof(Visibility), typeof(FormsListView), new PropertyMetadata(Visibility.Collapsed));
 
 		public void SetEmptyView(FrameworkElement emptyView)
 		{
@@ -37,6 +38,12 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				_emptyViewContentControl.Content = _emptyView;
 			}
+		}
+
+		protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
+		{
+			GroupFooterItemTemplateContext.EnsureSelectionDisabled(element, item);
+			base.PrepareContainerForItemOverride(element, item);
 		}
 	}
 }

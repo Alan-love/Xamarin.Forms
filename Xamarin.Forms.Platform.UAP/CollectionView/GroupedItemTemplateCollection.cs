@@ -1,57 +1,55 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	internal class ObservableItemTemplateCollection : ObservableCollection<ItemTemplateContext>
+	internal class GroupedItemTemplateCollection : ObservableCollection<GroupTemplateContext>
 	{
-		readonly IList _itemsSource;
+		readonly IEnumerable _itemsSource;
 		readonly DataTemplate _itemTemplate;
+		readonly DataTemplate _groupHeaderTemplate;
+		readonly DataTemplate _groupFooterTemplate;
 		readonly BindableObject _container;
-		readonly double _itemHeight;
-		readonly double _itemWidth;
-		readonly Thickness _itemSpacing;
-		readonly INotifyCollectionChanged _notifyCollectionChanged;
+		readonly IList _groupList;
 
-		public ObservableItemTemplateCollection(IList itemsSource, DataTemplate itemTemplate, BindableObject container, 
-			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null)
+		public GroupedItemTemplateCollection(IEnumerable itemsSource, DataTemplate itemTemplate, 
+			DataTemplate groupHeaderTemplate, DataTemplate groupFooterTemplate, BindableObject container)
 		{
-			if (!(itemsSource is INotifyCollectionChanged notifyCollectionChanged))
-			{
-				throw new ArgumentException($"{nameof(itemsSource)} must implement {nameof(INotifyCollectionChanged)}");
-			}
-
-			_notifyCollectionChanged = notifyCollectionChanged;
-
 			_itemsSource = itemsSource;
 			_itemTemplate = itemTemplate;
+			_groupHeaderTemplate = groupHeaderTemplate;
+			_groupFooterTemplate = groupFooterTemplate;
 			_container = container;
 
-			if (itemHeight.HasValue)
-				_itemHeight = itemHeight.Value;
-
-			if (itemWidth.HasValue)
-				_itemWidth = itemWidth.Value;
-
-			if (itemSpacing.HasValue)
-				_itemSpacing = itemSpacing.Value;
-
-			for (int n = 0; n < itemsSource.Count; n++)
+			foreach (var group in _itemsSource)
 			{
-				Add(new ItemTemplateContext(itemTemplate, itemsSource[n], container, _itemHeight, _itemWidth, _itemSpacing));
+				var groupTemplateContext = CreateGroupTemplateContext(group);
+				Add(groupTemplateContext);
 			}
 
-			_notifyCollectionChanged.CollectionChanged += InnerCollectionChanged;
+			if (_itemsSource is IList groupList && _itemsSource is INotifyCollectionChanged incc)
+			{
+				_groupList = groupList;
+				incc.CollectionChanged += GroupsChanged;
+			}
 		}
 
-		public void CleanUp()
+		GroupTemplateContext CreateGroupTemplateContext(object group)
 		{
-			_notifyCollectionChanged.CollectionChanged -= InnerCollectionChanged;
+			var groupHeaderTemplateContext = _groupHeaderTemplate != null
+					? new ItemTemplateContext(_groupHeaderTemplate, group, _container) : null;
+
+			var groupFooterTemplateContext = _groupFooterTemplate != null
+				? new GroupFooterItemTemplateContext(_groupFooterTemplate, group, _container) : null;
+
+			// This is where we'll eventually look at GroupItemPropertyName
+			var groupItemsList = TemplatedItemSourceFactory.Create(group as IEnumerable, _itemTemplate, _container);
+
+			return new GroupTemplateContext(groupHeaderTemplateContext, groupFooterTemplateContext, groupItemsList);
 		}
 
-		void InnerCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+		void GroupsChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
 			switch (args.Action)
 			{
@@ -70,20 +68,18 @@ namespace Xamarin.Forms.Platform.UWP
 				case NotifyCollectionChangedAction.Reset:
 					Reset();
 					break;
-				default:
-					throw new ArgumentOutOfRangeException();
 			}
 		}
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
-			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
+			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _groupList.IndexOf(args.NewItems[0]);
 
 			var count = args.NewItems.Count;
 
-			for(int n = 0; n < count; n++)
+			for (int n = 0; n < count; n++)
 			{
-				Insert(startIndex, new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing));
+				Insert(startIndex, CreateGroupTemplateContext(args.NewItems[n]));
 			}
 		}
 
@@ -101,7 +97,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			for(int n = count - 1; n >= 0; n--)
+			for (int n = count - 1; n >= 0; n--)
 			{
 				Move(args.OldStartingIndex + n, args.NewStartingIndex + n);
 			}
@@ -121,7 +117,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var count = args.OldItems.Count;
 
-			for(int n = startIndex + count - 1; n >= startIndex; n--)
+			for (int n = startIndex + count - 1; n >= startIndex; n--)
 			{
 				RemoveAt(n);
 			}
@@ -137,7 +133,7 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					var index = args.OldStartingIndex + n;
 					var oldItem = this[index];
-					var newItem = new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing);
+					var newItem = CreateGroupTemplateContext(args.NewItems[0]);
 					Items[index] = newItem;
 					var update = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newItem, oldItem, index);
 					OnCollectionChanged(update);
@@ -154,9 +150,13 @@ namespace Xamarin.Forms.Platform.UWP
 		void Reset()
 		{
 			Items.Clear();
-			for (int n = 0; n < _itemsSource.Count; n++)
+			_groupList.Clear();
+
+			foreach (var group in _itemsSource)
 			{
-				Items.Add(new ItemTemplateContext(_itemTemplate, _itemsSource[n], _container, _itemHeight, _itemWidth, _itemSpacing));
+				var groupTemplateContext = CreateGroupTemplateContext(group);
+				_groupList.Add(group);
+				Items.Add(groupTemplateContext);
 			}
 
 			var reset = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);

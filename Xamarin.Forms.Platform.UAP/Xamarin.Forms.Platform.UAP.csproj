@@ -42,9 +42,14 @@
     <Compile Include="AccessibilityExtensions.cs" />
     <Compile Include="CollectionView\CarouselViewRenderer.cs" />
     <Compile Include="CollectionView\FormsListView.cs" />
+    <Compile Include="CollectionView\GroupedItemTemplateCollection.cs" />
+    <Compile Include="CollectionView\GroupFooterItemTemplateContext.cs" />
+    <Compile Include="CollectionView\GroupHeaderStyleSelector.cs" />
+    <Compile Include="CollectionView\GroupTemplateContext.cs" />
     <Compile Include="CollectionView\IEmptyView.cs" />
-    <Compile Include="CollectionView\ItemsViewRenderer.cs" />
     <Compile Include="CollectionView\ScrollHelpers.cs" />
+    <Compile Include="CollectionView\GroupableItemsViewRenderer.cs" />
+    <Compile Include="CollectionView\ItemsViewRenderer.cs" />
     <Compile Include="CollectionView\SelectableItemsViewRenderer.cs" />
     <Compile Include="CollectionView\StructuredItemsViewRenderer.cs" />
     <Compile Include="ColorExtensions.cs" />
