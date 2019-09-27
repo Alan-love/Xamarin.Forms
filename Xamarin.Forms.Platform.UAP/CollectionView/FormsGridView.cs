@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.UWP
 		ItemsWrapGrid _wrapGrid;
 		ContentControl _emptyViewContentControl;
 		FrameworkElement _emptyView;
-		private Orientation _orientation;
+		Orientation _orientation;
 
 		public FormsGridView()
 		{
