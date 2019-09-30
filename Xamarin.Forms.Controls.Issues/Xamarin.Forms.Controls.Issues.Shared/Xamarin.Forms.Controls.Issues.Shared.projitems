@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewHeaderFooterTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewHeaderFooterView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewItemsUpdatingScrollMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7313.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7329.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7290.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7240.cs" />
@@ -26,6 +27,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue7061.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7111.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7339.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellGestures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellBackButtonBehavior.cs" />
